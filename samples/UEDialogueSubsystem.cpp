@@ -1,5 +1,4 @@
-//explanation: this is a code sample of a Dialogue subsystem in UE5
-// created for a SUC Games AGP project
+//Dec 2023 - this is a code sample of a Dialogue subsystem in UE5.  Created for a USC Games AGP project
 #include "GameSystems/DialogueSystem/DialogueSubsystem.h"
 
 #include "EnhancedInputSubsystems.h"

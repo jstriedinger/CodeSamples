@@ -1,3 +1,4 @@
+//Dec 2023 -  JS of arkde.com that takes care of behavoirs in a online course home page
 import { modals } from './modals.js'
 import YTPlayer from 'yt-player'
 import { gsap } from 'gsap'

@@ -1,20 +1,6 @@
-using System.Collections;
-
-using System.Collections.Generic;
-
-using UnityEngine;
-
-using Cinemachine;
-
-using UnityEngine.InputSystem;
-
-using DG.Tweening;
-
-using BehaviorDesigner.Runtime;
-using FMODUnity;
+//Dec 2023 - Behavoir script for the player on DeepWorld (USC Games school project)
 
 public class MonsterPlayer : MonoBehaviour
-
 {
 
     private GameManager gameManager;
@@ -75,8 +61,6 @@ public class MonsterPlayer : MonoBehaviour
         moveInputValue = context.ReadValue<Vector2>();
     }
 
-
-
     public void InputOnSwim(InputAction.CallbackContext context)
     {
         if (context.phase == InputActionPhase.Performed)
@@ -102,7 +86,6 @@ public class MonsterPlayer : MonoBehaviour
                 NormalSwimSFXEmitter.Play();
                 Debug.Log("play normal swim");
             }
-
         }
         else
         {
@@ -113,8 +96,6 @@ public class MonsterPlayer : MonoBehaviour
             }
         }
     }
-
-
 
     //Main function that moves the player like a squid. Propulsion by adding force to rigidbody
     void Swimm()
@@ -143,7 +124,6 @@ public class MonsterPlayer : MonoBehaviour
                 seq.Append(headPart.DOScaleY(1f, headShakeDuration  * 1.5f));
 
             }
-
             //metric handler
             MetricManagerScript.instance?.LogString("Player Action", "Swim");
         }
@@ -155,8 +135,6 @@ public class MonsterPlayer : MonoBehaviour
         Move();
         SlowTurn();
     }
-
-
 
     //Handles the ability for the player to slowly turn, making it more realistic
     private void SlowTurn()
@@ -170,11 +148,6 @@ public class MonsterPlayer : MonoBehaviour
             this.transform.rotation = Quaternion.RotateTowards(transform.rotation, tempRotation, rotationSpeed * Time.fixedDeltaTime);
         }
     }
-
-
-
-   
-
 
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -195,15 +168,12 @@ public class MonsterPlayer : MonoBehaviour
         gameManager.GameOver();
     }
 
-   
-
     public IEnumerator PlayCallSFX()
     {
         VFXVoice.Play();
         yield return new WaitForSeconds(0.3f);
         FMODUnity.RuntimeManager.PlayOneShot(SFXCall, transform.position);
     }
-
 
 }
 
