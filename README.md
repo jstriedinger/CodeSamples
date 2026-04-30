@@ -3,7 +3,7 @@ This public repo showcases code samples of Jose Striedinger, a game engineer and
 Here's a description what you can find here as of **May 2026**
 
 ## Unity C# sample
-Here you'll find samples of my project "A Deep World" in particular two systems Im proud of: Predators and a Dynamic Culling system.
+Here you'll find samples of my project "A Deep World" in particular two systems Im proud of: Predators and Flocking.
 
 ## Unreal C++ sample
 From the game "Sorelle", code of a dialogue subsytem I created for the game.
