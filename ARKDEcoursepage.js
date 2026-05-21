@@ -4,10 +4,7 @@ import YTPlayer from 'yt-player'
 import { gsap } from 'gsap'
 
 class Course {
-	/**
-	 * This method is run automatically when the module is imported,
-	 * because it exports a new instance of itself.
-	 */
+	
 	constructor() {
 		document.addEventListener(
 			'DOMContentLoaded', () => {
@@ -45,6 +42,7 @@ class Course {
 					this.ytPlayer.mute()
 				}
 			} )
+
 			//Close modal when click in background
 			document.addEventListener( 'click', ( event ) => {
 				const target = event.target
@@ -55,6 +53,7 @@ class Course {
 					}
 				}
 			} )
+			//the samne but when we press the Esc key
 			document.addEventListener( 'keydown', ( event ) => {
 				const e = event || window.event
 				if ( e.code === 'Escape' && this.ytPlayer ) { // Escape key
@@ -62,6 +61,7 @@ class Course {
 					this.ytPlayer.mute()
 				}
 			} )
+
 			//course description show more button
 			this.showMoreBtn.addEventListener( 'click', ( event ) => {
 				event.preventDefault()
