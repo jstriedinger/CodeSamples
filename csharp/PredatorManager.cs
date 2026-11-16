@@ -47,7 +47,7 @@ public class PredatorManager : SerializedMonoBehaviour
 
 	private void Update()
 	{
-		// Every 2 frames is precise enough honestly lol
+		// Updating every other frame is precise enough for this use and halves the cost
 		if (Time.frameCount % 2 == 0)
 			UpdateClosestChaserDistance();
 	}
@@ -109,10 +109,7 @@ public class PredatorManager : SerializedMonoBehaviour
 				minSqrDist = sqrDist;
 		}
 
-		// Single sqrt at the end — only when we have a valid result
+		// Single sqrt at the end, only when we have a valid result
 		ClosestChaserDistance = minSqrDist < float.MaxValue ? Mathf.Sqrt(minSqrDist) : float.MaxValue;
-		Debug.Log("Closest chaser distance: " + ClosestChaserDistance);
 	}
-
-
 }

@@ -85,7 +85,7 @@ public abstract class PredatorBase : Cullable, IPredator
 
 	public virtual void SetupPredator()
 	{
-		//first mosnter state update
+		//first predator state update
 		if (canReactToPlayer)
 		{
 			BehaviorTree.SetVariableValue("CanReactToCall", false);
@@ -104,7 +104,7 @@ public abstract class PredatorBase : Cullable, IPredator
 		return _moduleMap.TryGetValue(typeof(T), out var module) ? module as T : null;
 	}
 
-	//Someitmes i need to toggle the behavior tree for like cinematics
+	//Sometimes the behavior tree needs to be toggled, for example during cinematics
 	public void ToggleBehaviorTree(bool toggle)
 	{
 		if (BehaviorTree)
@@ -120,39 +120,26 @@ public abstract class PredatorBase : Cullable, IPredator
 				BehaviorTree.DisableBehavior(true);
 				BehaviorTree.enabled = false;
 				AIPath.enabled = false;
-
 			}
-
 		}
 	}
 
 	/**
- * Function that updates the monster state visually
- */
+	 * Function that updates the predator state visually
+	 */
 	public void UpdateMonsterState(PredatorState newState, bool withSound = true, bool showEffect = false)
 	{
 		if (CurrentState == newState && CurrentState != PredatorState.Default)
 			return;
 
-		//Kill all transitions and return to normal before deciding what to do
-		if (CurrentState == PredatorState.Chasing)
-		{
-			//we were on a chase
-		}
-
 		//If the new state is not Investigating then it can not react to Calls
 		if (newState != PredatorState.Investigate && canReactToPlayer)
 		{
 			BehaviorTree.SetVariableValue("CanReactToCall", false);
-			//_canReactToCall = true;
 		}
 
-		switch (newState)
-		{
-			case PredatorState.Investigate:
-				BehaviorTree?.SetVariableValue("CanReactToCall", true);
-				break;
-		}
+		if (newState == PredatorState.Investigate)
+			BehaviorTree?.SetVariableValue("CanReactToCall", true);
 
 		CurrentState = newState;
 		OnStateChanged?.Invoke(this, CurrentState);
@@ -162,8 +149,8 @@ public abstract class PredatorBase : Cullable, IPredator
 
 
 	/**
-   * Manual trigger of stimuli. Mainly used on our cinematics really
-   */
+	 * Manual trigger of stimuli. Mainly used in cinematics
+	 */
 	public void ManualPlayReaction(bool showEffect, bool animate)
 	{
 		foreach (var module in _predatorModules)
@@ -173,7 +160,7 @@ public abstract class PredatorBase : Cullable, IPredator
 	}
 
 	/**
-	 * Setup patrols potins for the behavior
+	 * Setup patrol points for the behavior
 	 * Easier to just pass an object and then get all the child transforms
 	 */
 	public void SetupPatrolPoints(Transform patrolObj)
@@ -229,14 +216,8 @@ public abstract class PredatorBase : Cullable, IPredator
 
             Gizmos.color = sqrDist <= maxSqrDist ? Color.green : Color.red;
             Gizmos.DrawLine(center, camPos);
-            //Gizmos.DrawWireSphere(camPos, cullDistance);
         }
-
-
     }
 #endif
-
-
-
 }
 

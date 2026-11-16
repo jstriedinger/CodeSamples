@@ -1,9 +1,13 @@
-# Hello there :wave:
-This public repo showcases code samples of Jose Striedinger, a game engineer and designer (I've heard he is also a very nice guy).
-Here's a description what you can find here as of **May 2026**
+# Jose Striedinger: Code Samples
 
-- **FlockManager** : code from my project A Deep World where I created a flocking system
-- **PredatorNase and PredatorManager** : from the same game, samples of how I managed enemies in the project
-- **arkdecoursepage** : sample of web development with js and ES6
+Gameplay and AI programmer (Unity, Unreal, C++). These are excerpts from larger projects, so they don't build on their own. More at [jstriedinger.com](https://jstriedinger.com/).
 
-> Checkout [jstriedinger.com](https://jstriedinger.com/) for my creative portfolio, including more info on the projects the samples are from.
+## Unity (C#), *A Deep World*
+- [FlockManager.cs](csharp/FlockManager.cs): flocking for hundreds of agents using the Job System, with pluggable behaviors and culling.
+- [PredatorBase.cs](csharp/PredatorBase.cs) and [PredatorManager.cs](csharp/PredatorManager.cs): enemy state and module architecture, plus an event-driven manager that tracks the closest chaser. Behavior tree and pathfinding are third-party assets.
+
+## Unreal (C++), *The Guardian*
+- [DynamicCameraActor.cpp](cpp/DynamicCameraActor.cpp): camera that frames the player plus targets added or removed at runtime, with arm length computed from FOV and pitch.
+
+## Custom engine (C++)
+- [Flock.cpp](cpp/Flock.cpp): boids with obstacle avoidance and predator/prey roles, written from scratch. Details are under NDA.

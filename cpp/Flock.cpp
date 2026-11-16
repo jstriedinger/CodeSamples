@@ -4,8 +4,23 @@
 
 #include "pch.h"
 #include "Flock.h"
-#include <ctime>
+#include <random>
 #include <City.h>
+
+namespace
+{
+	std::mt19937& Rng()
+	{
+		static std::mt19937 rng{ std::random_device{}() };
+		return rng;
+	}
+
+	// Random integer in [0, maxExclusive)
+	int RandomInt(int maxExclusive)
+	{
+		return std::uniform_int_distribution<int>(0, maxExclusive - 1)(Rng());
+	}
+}
 
 Flock::Flock() = default;
 Flock::~Flock() = default;
@@ -14,8 +29,8 @@ void Flock::OnInitialize(float radius, int numAgents)
 {
 	m_radius = radius;
 	m_numAgents = numAgents;
-	const float gapX = -12.0f + 8.0f * (std::rand() % 4);
-	const float gapZ = 12.0f + 8.0f * (std::rand() % 4);
+	const float gapX = -12.0f + 8.0f * RandomInt(4);
+	const float gapZ = 12.0f + 8.0f * RandomInt(4);
 	m_origin = Vector3(gapX, RandomRange(5.0f, 12.0f), gapZ);
 
 
@@ -44,23 +59,21 @@ void Flock::CreateFlockAgents()
 
 void Flock::OnUpdate(float deltaTime, const std::vector<Skyscraper>& buildings, Floor& floor)
 {
-	// Update flock agents' positions and behaviors here
-	// For example, you can implement alignment, cohesion, and separation behaviors
 	for (FlockAgent& agent : m_flockAgents)
 	{
 		//for each flock we calculate alignment, cohesion and separation
-		//each gives us a normalized vector, a direction and we mutliple by the weights
-		//We play with those values to see how it goes
+		//each gives us a normalized direction and we multiply it by its weight
+		//The weights are tuned by hand until the flock feels right
 		Vector3 flockDir = Vector3::Zero;
 		CalculateFlockDirection(agent, flockDir);
 
-		//I did this just to make the flocks stay around the area we play
+		//Keeps the flocks inside the play area
 		CalculateContainmentDirection(agent, flockDir);
 
 		//Avoidance to obstacles
 		CalculateCollisionDirection(agent, buildings, floor, flockDir);
 
-		//normala agent scape fropm redball, defender pursues redballs
+		//normal agents escape from the red ball, defenders pursue it
 		if (agent.type == FlockAgentType::Normal)
 			CalculateScatterDirection(agent, flockDir);
 		else if (agent.type == FlockAgentType::Defender)
@@ -102,13 +115,12 @@ void Flock::OnRender(cdp_framework::RenderContextPtr& renderContext)
 				Vector3(yaw, pitch, 0.0f), m_agentNormalColor);
 
 		}
-		//renderContext->RenderPrimitive(m_flockShape, Vector3::One, agent.position, Vector3::Zero, m_color);
 	}
 }
 
 float Flock::RandomRange(float minValue, float maxValue)
 {
-	return minValue + (maxValue - minValue) * (std::rand() / static_cast<float>(RAND_MAX));
+	return std::uniform_real_distribution<float>(minValue, maxValue)(Rng());
 }
 
 //Alignment, cohesion and separation!
@@ -131,7 +143,7 @@ void Flock::CalculateFlockDirection(FlockAgent& agent, Vector3& finalDir)
 
 		if (distSqr <= separationReach * separationReach && distSqr > 0.0f)
 		{
-			//to make it stronger or weakyer the closer/far away we are
+			//stronger when closer, weaker when farther away
 			separation += (agent.position - neighborPos) / distSqr;
 		}
 
@@ -142,7 +154,7 @@ void Flock::CalculateFlockDirection(FlockAgent& agent, Vector3& finalDir)
 			numNeighbors++;
 		}
 
-		//if we have HUNDREDS lets no check ALL of them
+		//with hundreds of agents, stop once we have enough neighbors
 		if (numNeighbors >= m_maxNeighbors)
 			break;
 
@@ -163,13 +175,13 @@ void Flock::CalculateFlockDirection(FlockAgent& agent, Vector3& finalDir)
 	}
 	else
 	{
-		//if we dont have neighbors we just go forward
+		//if we have no neighbors we just go forward
 		finalDir = agent.forward;
 	}
 	
 }
 
-//This is a bit more hardcoded, dont judge me
+//Pulls the agent back toward the nearest point inside the bounds (hardcoded to a box)
 void Flock::CalculateContainmentDirection(FlockAgent& agent, Vector3& finalDir)
 {
 	Vector3 closest;
@@ -188,10 +200,10 @@ void Flock::CalculateCollisionDirection(FlockAgent& agent, const std::vector<Sky
 	Vector3 nearestLateral = Vector3::Zero;
 	bool    willCollide = false;
 
-	//now we test with very building
+	//now we test against every building
 	for (const Skyscraper& s : buildings)
 	{
-		//find closest point ont his building to our agent
+		//find the closest point on this building to our agent
 		const Vector3 halfSize(s.width * 0.5f, s.height * 0.5f, s.length * 0.5f);
 		const Vector3 boxMin = s.position - halfSize;
 		const Vector3 boxMax = s.position + halfSize;
@@ -205,17 +217,17 @@ void Flock::CalculateCollisionDirection(FlockAgent& agent, const std::vector<Sky
 		Vector3 toObstacle = closestPoint - agent.position;
 		float distanceToObstacleAhead = toObstacle.Dot(agent.forward);
 
-		//Making sure is not behindus or jsut too far away
+		//Make sure it is not behind us or too far away
 		if (distanceToObstacleAhead < 0.0f || distanceToObstacleAhead > m_lookAheadDistance)
 			continue; 
 
-		//directly from craig reynolds avoidance 
+		//obstacle avoidance as described by Craig Reynolds
 		const Vector3 lateralOffset = toObstacle - (agent.forward * distanceToObstacleAhead);
-		//Is like we have a cilinder of radius Checkradius and lenght of max m_lookAheadDistance
+		//Like testing a cylinder of radius checkRadius and length m_lookAheadDistance
 		if (lateralOffset.LengthSquared() > checkRadius * checkRadius) continue;
 
 
-		//we just want to reac to cloest obstacle now
+		//we only react to the closest obstacle
 		if (distanceToObstacleAhead < nearestAhead)         
 		{
 			nearestAhead = distanceToObstacleAhead;
@@ -233,7 +245,7 @@ void Flock::CalculateCollisionDirection(FlockAgent& agent, const std::vector<Sky
 		finalDir += steer * m_avoidanceWeight;
 	}
 
-	//now with the floor. Way easier
+	//now the floor, which is simpler
 	const float futureY = agent.position.y + agent.forward.y * m_lookAheadDistance;
 	if (futureY < floor.height + checkRadius)
 	{
@@ -246,7 +258,7 @@ void Flock::CalculateScatterDirection(FlockAgent& agent, Vector3& finalDir)
 {
 	if (agent.hasThreat)
 	{
-		//escaping from a  redball
+		//escaping from the red ball
 		Vector3 threatToAgent = agent.position - agent.threatPos;
 		Vector3 dir;
 
@@ -255,10 +267,10 @@ void Flock::CalculateScatterDirection(FlockAgent& agent, Vector3& finalDir)
 
 		//closest point
 		const Vector3 closestOnTargetPath = agent.threatPos + dir * along;
-		//we can just escape going to the opposite dir
+		//escape perpendicular to the ball's path
 		Vector3 escape = agent.position - closestOnTargetPath;
 
-		//if its like very very similar to the path the redball has right now
+		//if the agent is almost exactly on the red ball's path
 		if (escape.LengthSquared() < 0.01f)
 			escape = dir.Cross(Vector3::UnitY);
 
@@ -268,12 +280,12 @@ void Flock::CalculateScatterDirection(FlockAgent& agent, Vector3& finalDir)
 
 }
 
-//funny enogh this is pretty much the same as scatter but we want in the direction fo the theat!
+//Mirror of scatter: instead of escaping, the defender heads toward the threat
 void Flock::CalculateInterceptionDirection(FlockAgent& agent, Vector3& finalDir)
 {
 	if (agent.hasThreat)
 	{
-		//go straight for the redball
+		//go straight for the red ball
 		Vector3 pursue = agent.threatPos - agent.position;
 		pursue.Normalize();
 		finalDir += pursue * m_scatterWeight;
@@ -318,8 +330,8 @@ void Flock::UpdateGameState()
 	//Now we check if we need to add a defender agent
 	if (m_numEatenByRedball >= m_maxEatenBeforeDefender && !m_flockAgents.empty())
 	{
-		//we get a randome agent pos
-		const FlockAgent& randomParent = m_flockAgents[std::rand() % m_flockAgents.size()];
+		//spawn next to a random existing agent
+		const FlockAgent& randomParent = m_flockAgents[RandomInt(static_cast<int>(m_flockAgents.size()))];
 		Vector3 randomPos = randomParent.position + Vector3(RandomRange(-2.0f, 2.0f), RandomRange(-2.0f, 2.0f), RandomRange(-2.0f, 2.0f));
 		AddFlockAgent(randomPos, Vector3::Zero, FlockAgentType::Defender );
 		

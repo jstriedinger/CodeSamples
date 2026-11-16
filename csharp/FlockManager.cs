@@ -4,9 +4,6 @@ public class FlockManager : Cullable
 	private NativeArray<BoidData> _agentsDataArray;
 	private NativeArray<float2> _steeringOutputArray;
 	private NativeArray<float> _speedMultiplierOutput, _currentSpeedMultiplier;
-	private NativeArray<uint> _randomSeeds;
-
-
 
 	[Title("Main config")]
 	[SerializeField] private bool isActive = true;
@@ -26,23 +23,14 @@ public class FlockManager : Cullable
 
 	//Keep tracking
 	private Dictionary<Collider2D, FlockAgentJob> _agentColliderMap = new();
-	private Vector2 _alignmentDir, _cohesionDir, _separationDir;
-	private Transform _agentTransform;
-	private Vector3 _currentAgentPos;
-	private Vector2 _currentAgentMove;
-	private float _currentSqrdDistanceFromPlayer;
-
 
 	private void Awake()
 	{
 		// Get all behaviors attached as components
 		_behaviors = GetComponents<FlockBehaviorBase>();
-
 	}
 
-
-	// Start is called before the first frame update
-	void Start()
+	private void Start()
 	{
 		SetupFlockJobData();
 		InitializeAgents();
@@ -56,7 +44,6 @@ public class FlockManager : Cullable
 		_steeringOutputArray = new NativeArray<float2>(numAgents, Allocator.Persistent);
 		_speedMultiplierOutput = new NativeArray<float>(numAgents, Allocator.Persistent);
 		_currentSpeedMultiplier = new NativeArray<float>(numAgents, Allocator.Persistent);
-		_randomSeeds = new NativeArray<uint>(numAgents, Allocator.Persistent);
 
 		for (int i = 0; i < numAgents; i++)
 		{
@@ -93,8 +80,7 @@ public class FlockManager : Cullable
 		}
 	}
 
-	// Update is called once per frame
-	void Update()
+	private void Update()
 	{
 		if (!isActive || !_agentsDataArray.IsCreated)
 			return;
@@ -126,7 +112,6 @@ public class FlockManager : Cullable
 			Output = _steeringOutputArray,
 			SpeedMultiplierOutput = _speedMultiplierOutput,
 			TimeSeconds = Time.time,
-
 		};
 
 		//3. Calculate behaviors to use
@@ -165,18 +150,15 @@ public class FlockManager : Cullable
 		}
 	}
 
-
-
 	private void OnDestroy()
 	{
 		if (_agentsDataArray.IsCreated) _agentsDataArray.Dispose();
 		if (_steeringOutputArray.IsCreated) _steeringOutputArray.Dispose();
 		if (_speedMultiplierOutput.IsCreated) _speedMultiplierOutput.Dispose();
 		if (_currentSpeedMultiplier.IsCreated) _currentSpeedMultiplier.Dispose();
-		if (_randomSeeds.IsCreated) _randomSeeds.Dispose();
 	}
 
-	//to toggle the whole acitvity on and off
+	//to toggle the whole activity on and off
 	public void ToggleActivity(bool newActive)
 	{
 		this.isActive = newActive;
@@ -192,9 +174,9 @@ public class FlockManager : Cullable
 
 	public bool ToggleContainment(bool newActive)
 	{
-		var goal = _behaviors.OfType<FlockContainment>().FirstOrDefault();
-		if (goal == null) return false;
-		goal.isActive = newActive;
+		var containment = _behaviors.OfType<FlockContainment>().FirstOrDefault();
+		if (containment == null) return false;
+		containment.isActive = newActive;
 		return true;
 	}
 
@@ -233,13 +215,13 @@ public class FlockManager : Cullable
 
 	public override void SetCulled(bool culled)
 	{
-		//for flock manager is only just changing a boolean no big deal
+		//for the flock manager this only changes a boolean, so it is cheap
 		isCulled = culled;
 	}
 
 	protected override void OnDrawGizmosSelected()
 	{
-		//if they are the same it pretty much mean is visible
+		//if they are the same it pretty much means it is visible
 		if (_cameraClosestPoint == Vector3.one)
 			return;
 
